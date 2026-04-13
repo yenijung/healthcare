@@ -27,3 +27,20 @@ r2_base = r2_score(y_test, y_pred_base)
 
 print("Baseline RMSE:", rmse_base)
 print("Baseline R2:", r2_base)
+
+# engineered regression
+X_eng = df_model[['age', 'bmi', 'smoker_binary',
+                  'smoker_bmi', 'bmi_30', 'smoker_bmi30', 'smoker_age']]
+
+X_train, X_test, y_train, y_test = train_test_split(X_eng, y, test_size=0.2, random_state=42)
+
+model_eng = LinearRegression()
+model_eng.fit(X_train, y_train)
+
+y_pred_eng = model_eng.predict(X_test)
+
+rmse_eng = np.sqrt(mean_squared_error(y_test, y_pred_eng))
+r2_eng = r2_score(y_test, y_pred_eng)
+
+print("Engineered RMSE:", rmse_eng)
+print("Engineered R2:", r2_eng)
