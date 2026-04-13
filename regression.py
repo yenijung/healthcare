@@ -44,3 +44,18 @@ r2_eng = r2_score(y_test, y_pred_eng)
 
 print("Engineered RMSE:", rmse_eng)
 print("Engineered R2:", r2_eng)
+
+'''
+Baseline RMSE: 5874.763304187488
+Baseline R2: 0.7776932310583375
+Engineered RMSE: 4412.198998945896
+Engineered R2: 0.8746044504245709
+
+-> RMSE: how wrong is the model on average
+         In this case, RMSE is 4 digit as the unit of the output is gbp.
+-> R2: what percentage of data variability did model account for
+       In general, 0.8+ is ideal. (0<R2<1)
+
+RMSE is lower and R2 is higher in engineered model, meaning lower error and higher explainability.
+Therefore, feature engineering was worth it. 
+'''
