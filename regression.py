@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+from matplotlib import pyplot as plt
+from seaborn import scatterplot
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
@@ -58,4 +60,32 @@ Engineered R2: 0.8746044504245709
 
 RMSE is lower and R2 is higher in engineered model, meaning lower error and higher explainability.
 Therefore, feature engineering was worth it. 
+'''
+
+# actual charges & predicted charges
+# premium is germane to the predicted charges.
+df_model['predicted_cost'] = model_eng.predict(X_eng)
+# residual = actual - predicted
+# residual > 0: underprediction
+# residual < 0: overprediction
+# Especially check if it underpredicts high-cost case as this can lead to company loss!
+df_model['residual'] = df_model['charges'] - df_model['predicted_cost']
+df_model['abs_residual'] = abs(df_model['residual'])
+
+print(df_model[['charges', 'predicted_cost', 'residual', 'abs_residual']].head())
+### TODO: SAVE DF SEPARATELY WHEN MODEL IS CONFIRMED.
+
+plt.figure(figsize=(7,5))
+scatterplot(x=df_model['predicted_cost'], y=df_model['residual'])
+plt.axhline(0, color='red', linestyle='--')
+plt.title("Residuals vs Predicted Cost")
+plt.xlabel("Predicted Cost")
+plt.ylabel("Residual (Actual - Predicted)")
+plt.show()
+
+'''
+There are a number of underpredicted cost of high-cost case.
+Let's focus on x-axis (predicted cost).
+It is more stable on high-predicted section.
+Model has high explainability (high R2) but cannot capture tail risk perfectly.
 '''
