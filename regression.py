@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-from seaborn import scatterplot
+from seaborn import scatterplot, histplot
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
@@ -81,7 +81,7 @@ plt.axhline(0, color='red', linestyle='--')
 plt.title("Residuals vs Predicted Cost")
 plt.xlabel("Predicted Cost")
 plt.ylabel("Residual (Actual - Predicted)")
-plt.show()
+plt.show(block=False)
 
 '''
 There are a number of underpredicted cost of high-cost case.
@@ -89,3 +89,28 @@ Let's focus on x-axis (predicted cost).
 It is more stable on high-predicted section.
 Model has high explainability (high R2) but cannot capture tail risk perfectly.
 '''
+
+print("Check residual that is higher than 10k residual.")
+high_residual = df_model[df_model['residual'] > 10000]  # 86 cases
+
+# check the pattern
+print(high_residual[['age', 'bmi', 'smoker_binary']].mean())
+
+'''
+age              39.116279  # not considered as old
+bmi              30.886860  # obese
+smoker_binary     0.139535  # mean of binary variable = proportion!
+
+-> We have high residual = smoker + high BMI.
+However, smoker is only 14% of the whole high residual cases.
+This means that the most of the cases are "non-smokers" but still high charges.
+-> The model couldn't capture the high-cost cases in non-smokers.
+'''
+
+# Then, investigate what causes these non-smokers have high charges.
+# i.e many children, specific region, not enough variables, noise
+print("average number of children: ", high_residual['children'].mean()) # 1.1627906976744187
+print("frequencies by regions: ", high_residual['region'].value_counts())   # northeast 27, northwest 24, southest 22, southwest 13
+# Seems like children, region are not the direct causes also. -> "unexplained risk"
+# Therefore, when designing pricing, premium function must contain safety margin / buffer.
+
