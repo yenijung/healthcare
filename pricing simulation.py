@@ -26,3 +26,13 @@ print("Average profit:", df_model['profit'].mean())
 print("Total profit:", df_model['profit'].sum())
 
 # result: Overall profit but still need more details.
+
+# loss case ratio
+loss_ratio = (df_model['profit'] < 0).mean()
+print("Loss ratio:", loss_ratio)    # around 0.09 -> stable as insurance pricing has pooling structure.
+
+# profit per group
+print(df_model.groupby('smoker')['profit'].mean())
+print(df_model.groupby('bmi_30')['profit'].mean())
+
+### result: The current pricing structure generates a disproportionate prop from the high-risk group!
