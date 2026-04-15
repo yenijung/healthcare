@@ -17,6 +17,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/data/insurance_with_predictions.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

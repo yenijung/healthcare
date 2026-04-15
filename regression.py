@@ -73,7 +73,8 @@ df_model['residual'] = df_model['charges'] - df_model['predicted_cost']
 df_model['abs_residual'] = abs(df_model['residual'])
 
 print(df_model[['charges', 'predicted_cost', 'residual', 'abs_residual']].head())
-### TODO: SAVE DF SEPARATELY WHEN MODEL IS CONFIRMED.
+# TODO: this may differ -> check after completion.
+df_model.to_csv("data/insurance_with_predictions.csv", index=False)
 
 plt.figure(figsize=(7,5))
 scatterplot(x=df_model['predicted_cost'], y=df_model['residual'])
@@ -113,4 +114,3 @@ print("average number of children: ", high_residual['children'].mean()) # 1.1627
 print("frequencies by regions: ", high_residual['region'].value_counts())   # northeast 27, northwest 24, southest 22, southwest 13
 # Seems like children, region are not the direct causes also. -> "unexplained risk"
 # Therefore, when designing pricing, premium function must contain safety margin / buffer.
-
