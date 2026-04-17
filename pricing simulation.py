@@ -36,3 +36,30 @@ print(df_model.groupby('smoker')['profit'].mean())
 print(df_model.groupby('bmi_30')['profit'].mean())
 
 ### result: The current pricing structure generates a disproportionate prop from the high-risk group!
+
+# loss customer definition
+loss_df = df_model[df_model['profit'] < 0].copy()
+print("Number of loss customers: ", len(loss_df))
+print("Loss ratio: ", len(loss_df) / len(df_model))
+
+print("Loss group mean:")
+print(loss_df[['age', 'bmi', 'predicted_cost', 'charges', 'profit']].mean())
+print("\nOverall mean:")
+print(df_model[['age', 'bmi', 'predicted_cost', 'charges', 'profit']].mean())
+
+print("Loss rate by customer:")
+print(loss_df['smoker'].value_counts(normalize=True))
+print(df_model.groupby('smoker')['profit'].apply(lambda x: (x < 0).mean()))
+print("Loss rate by BMI:")
+print(df_model.groupby('bmi_30')['profit'].apply(lambda x: (x < 0).mean()))
+
+print("Underpricing check:")
+print(loss_df[['charges', 'predicted_cost', 'premium', 'profit']].head(10))
+
+print("Check with residual:")
+loss_df['residual'] = loss_df['charges'] - loss_df['predicted_cost']
+print(loss_df['residual'].describe())
+
+print("Check the high-cost section intensively:")
+high_cost_loss = loss_df[loss_df['charges'] > 30000]
+print("High-cost loss ratio:", len(high_cost_loss) / len(loss_df))
