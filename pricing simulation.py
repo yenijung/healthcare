@@ -71,3 +71,5 @@ print("High-cost loss ratio:", len(high_cost_loss) / len(loss_df))
 # result: ratio about 20%
 
 ## To conclude, models operate poorly with non-smoker high-cost prediction and unexpected medical cost.
+
+# fetch test
