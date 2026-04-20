@@ -53,7 +53,7 @@ print(loss_df['smoker'].value_counts(normalize=True))
 print(df_model.groupby('smoker')['profit'].apply(lambda x: (x < 0).mean()))
 print("Loss rate by BMI:")
 print(df_model.groupby('bmi_30')['profit'].apply(lambda x: (x < 0).mean()))
-# result: most of the losses are non-smoker cases. bmi does not have much differences.
+# result: most of the losses are non-smoker cases. bmi shows not distinct differences.
 
 print("Underpricing check:")
 print(loss_df[['charges', 'predicted_cost', 'premium', 'profit']].head(10))
@@ -72,4 +72,55 @@ print("High-cost loss ratio:", len(high_cost_loss) / len(loss_df))
 
 ## To conclude, models operate poorly with non-smoker high-cost prediction and unexpected medical cost.
 
-# fetch test
+### Then, how can we reduce loss without setting extremely unfair pricing?
+## We have checked: The most of the loss is derived from non-smoker group. The cause is underestimation, which cannot be solved with margin.
+## Therefore, the solution is "adding extra pricing on the group that are most likely to be underestimated".
+
+## Three options:
+# 1. Global margin (improve baseline): add extra price (fixed percentage) to everyone
+# premium = predicted * (1 + m)
+# However, this affects low-risk groups -> unfair
+print("\n1. Global margin \n")
+margins = [0.1, 0.2, 0.3]
+
+for m in margins:
+    df_model[f'premium_m_{int(m * 100)}'] = df_model['predicted_cost'] * (1 + m)
+    df_model[f'profit_m_{int(m * 100)}'] = df_model[f'premium_m_{int(m * 100)}'] - df_model['charges']
+
+    print(f"\nMargin {m * 100}%")
+    print("Average profit:", df_model[f'profit_m_{int(m * 100)}'].mean())
+    print("Loss ratio:", (df_model[f'profit_m_{int(m * 100)}'] < 0).mean())
+
+# 2. Risk-based Margin: add extra price (fixed percentage) only to high-risk group
+print("\n2. Risk-based margin \n")
+margins = [0.1, 0.2, 0.3]
+def risk_based_margin(row):
+    if row['smoker'] == 'yes':
+        return 0.20
+    elif row['bmi'] >= 30:
+        return 0.15
+    else:
+        return 0.10
+
+df_model['margin_risk'] = df_model.apply(risk_based_margin, axis=1)
+
+df_model['premium_risk'] = df_model['predicted_cost'] * (1 + df_model['margin_risk'])
+df_model['profit_risk'] = df_model['premium_risk'] - df_model['charges']
+
+print("Average profit:", df_model['profit_risk'].mean())
+print("Loss ratio:", (df_model['profit_risk'] < 0).mean())
+
+# 3. Safety Buffer: add extra price (fixed price) to everyone
+# premium = predicted * (1 + m) + k
+print("\n3. Safety bugger \n")
+base_margin = 0.10
+buffer = 2000
+
+df_model['premium_buffer'] = df_model['predicted_cost'] * (1 + base_margin) + buffer
+df_model['profit_buffer'] = df_model['premium_buffer'] - df_model['charges']
+
+print("Average profit:", df_model['profit_buffer'].mean())
+print("Loss ratio:", (df_model['profit_buffer'] < 0).mean())
+
+## Conclusion: The profit increases as it goes up, but the loss ratio hardly decreases.
+# However, safety buffer has the most profit with the least loss ratio.
