@@ -123,4 +123,21 @@ print("Average profit:", df_model['profit_buffer'].mean())
 print("Loss ratio:", (df_model['profit_buffer'] < 0).mean())
 
 ## Conclusion: The profit increases as it goes up, but the loss ratio hardly decreases.
-# However, safety buffer has the most profit with the least loss ratio.
+# However, "safety buffer" has the most profit with the least loss ratio.
+
+### Then how much is the best buffer?
+print("\nBuffer finalisation \n")
+
+buffers = [1000, 2000, 3000, 4000]
+
+for k in buffers:
+    premium = df_model['predicted_cost'] * 1.1 + k
+    profit = premium - df_model['charges']
+
+    print(f"\nBuffer {k}")
+    print("Average profit:", profit.mean())
+    print("Loss ratio:", (profit < 0).mean())
+
+# As one would expect, as the margin increases, profits rise and losses decrease.
+
+# DONE - Move on to fairness check.
