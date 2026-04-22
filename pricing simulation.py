@@ -139,5 +139,3 @@ for k in buffers:
     print("Loss ratio:", (profit < 0).mean())
 
 # As one would expect, as the margin increases, profits rise and losses decrease.
-
-# DONE - Move on to fairness check.
