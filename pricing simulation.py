@@ -5,6 +5,7 @@
 4. margin을 바꾸면서 simulation -> profit이 어떻게 변하는지, 누가 underpriced / overpriced 되는지
 '''
 import pandas as pd
+from matplotlib import pyplot as plt
 
 df_model = pd.read_csv("data/insurance_with_predictions.csv")
 
@@ -139,3 +140,125 @@ for k in buffers:
     print("Loss ratio:", (profit < 0).mean())
 
 # As one would expect, as the margin increases, profits rise and losses decrease.
+
+# figures for README.md
+# 1. Residual Plot
+df_model['residual'] = df_model['charges'] - df_model['predicted_cost']
+
+plt.figure(figsize=(7, 5))
+plt.scatter(df_model['predicted_cost'], df_model['residual'], alpha=0.6)
+plt.axhline(0, linestyle='--')
+plt.xlabel("Predicted Cost")
+plt.ylabel("Residual (Actual - Predicted)")
+plt.title("Prediction Error: Residual Plot")
+plt.tight_layout()
+plt.savefig("figures/residual_plot.png", dpi=300)
+plt.close()
+
+# 2. Profit Distribution
+plt.figure(figsize=(7, 5))
+plt.hist(df_model['profit_buffer'], bins=40)
+plt.xlabel("Profit")
+plt.ylabel("Frequency")
+plt.title("Profit Distribution under Safety Buffer Pricing")
+plt.tight_layout()
+plt.savefig("figures/profit_distribution.png", dpi=300)
+plt.close()
+
+# 3. Global Margin Analysis
+margin_values = [0.10, 0.20, 0.30]
+margin_avg_profits = []
+margin_loss_ratios = []
+
+for m in margin_values:
+    premium = df_model['predicted_cost'] * (1 + m)
+    profit = premium - df_model['charges']
+    margin_avg_profits.append(profit.mean())
+    margin_loss_ratios.append((profit < 0).mean())
+
+plt.figure(figsize=(7, 5))
+plt.plot([m * 100 for m in margin_values], margin_avg_profits, marker='o')
+plt.xlabel("Global Margin (%)")
+plt.ylabel("Average Profit")
+plt.title("Average Profit by Global Margin")
+plt.tight_layout()
+plt.savefig("figures/global_margin_profit.png", dpi=300)
+plt.close()
+
+plt.figure(figsize=(7, 5))
+plt.plot([m * 100 for m in margin_values], margin_loss_ratios, marker='o')
+plt.xlabel("Global Margin (%)")
+plt.ylabel("Loss Ratio")
+plt.title("Loss Ratio by Global Margin")
+plt.tight_layout()
+plt.savefig("figures/global_margin_loss_ratio.png", dpi=300)
+plt.close()
+
+# 4. Buffer Sensitivity Analysis
+buffer_values = [1000, 2000, 3000, 4000]
+buffer_avg_profits = []
+buffer_loss_ratios = []
+
+for k in buffer_values:
+    premium = df_model['predicted_cost'] * 1.10 + k
+    profit = premium - df_model['charges']
+    buffer_avg_profits.append(profit.mean())
+    buffer_loss_ratios.append((profit < 0).mean())
+
+plt.figure(figsize=(7, 5))
+plt.plot(buffer_values, buffer_avg_profits, marker='o')
+plt.xlabel("Safety Buffer")
+plt.ylabel("Average Profit")
+plt.title("Average Profit by Safety Buffer")
+plt.tight_layout()
+plt.savefig("figures/buffer_profit.png", dpi=300)
+plt.close()
+
+plt.figure(figsize=(7, 5))
+plt.plot(buffer_values, buffer_loss_ratios, marker='o')
+plt.xlabel("Safety Buffer")
+plt.ylabel("Loss Ratio")
+plt.title("Loss Ratio by Safety Buffer")
+plt.tight_layout()
+plt.savefig("figures/buffer_loss_ratio.png", dpi=300)
+plt.close()
+
+# 5. Strategy Comparison
+strategy_names = ["Global 10%", "Global 20%", "Global 30%", "Risk-based", "Buffer"]
+strategy_avg_profits = [
+    df_model['profit_m_10'].mean(),
+    df_model['profit_m_20'].mean(),
+    df_model['profit_m_30'].mean(),
+    df_model['profit_risk'].mean(),
+    df_model['profit_buffer'].mean()
+]
+
+strategy_loss_ratios = [
+    (df_model['profit_m_10'] < 0).mean(),
+    (df_model['profit_m_20'] < 0).mean(),
+    (df_model['profit_m_30'] < 0).mean(),
+    (df_model['profit_risk'] < 0).mean(),
+    (df_model['profit_buffer'] < 0).mean()
+]
+
+plt.figure(figsize=(8, 5))
+plt.bar(strategy_names, strategy_avg_profits)
+plt.xlabel("Pricing Strategy")
+plt.ylabel("Average Profit")
+plt.title("Average Profit by Pricing Strategy")
+plt.xticks(rotation=30)
+plt.tight_layout()
+plt.savefig("figures/strategy_profit_comparison.png", dpi=300)
+plt.close()
+
+plt.figure(figsize=(8, 5))
+plt.bar(strategy_names, strategy_loss_ratios)
+plt.xlabel("Pricing Strategy")
+plt.ylabel("Loss Ratio")
+plt.title("Loss Ratio by Pricing Strategy")
+plt.xticks(rotation=30)
+plt.tight_layout()
+plt.savefig("figures/strategy_loss_comparison.png", dpi=300)
+plt.close()
+
+print("Figures saved to results/figures/")
